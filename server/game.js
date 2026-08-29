@@ -94,6 +94,7 @@ export function createStore() {
         voterCount: connectedPlayers(room).length,
         votedNames: votedNames(room),
         youVoted: Boolean(playerId) && room.round.votes.has(playerId),
+        yourChoiceId: (playerId && room.round.votes.get(playerId)?.choiceId) || null,
         mark: !watch && playerId === room.round.targetId ? "check" : watch ? null : "cross",
         phrase: !watch && playerId === room.round.targetId ? room.round.phrase : null,
       };

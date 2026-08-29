@@ -25,6 +25,7 @@ const state = {
   qr: "",
   choiceId: "",
   lastRoundId: "",
+  lastRoundNumber: 0,
   copied: "",
   now: Date.now(),
   watch: params.get("watch") === "1",
@@ -74,6 +75,7 @@ function resetToHome(notice = "") {
   state.playerId = "";
   state.choiceId = "";
   state.lastRoundId = "";
+  state.lastRoundNumber = 0;
   state.qr = "";
   state.watch = false;
   state.notice = notice;
@@ -133,6 +135,17 @@ async function makeQr(code) {
 
 function remaining(endsAt) {
   return Math.max(0, Math.ceil((endsAt - state.now) / 1000));
+}
+
+function currentChoiceId(round) {
+  if (round?.yourChoiceId) return round.yourChoiceId;
+  if (round?.id && state.lastRoundId === round.id) return state.choiceId;
+  return "";
+}
+
+function blurActive() {
+  const el = document.activeElement;
+  if (el && typeof el.blur === "function") el.blur();
 }
 
 function escapeHtml(value) {
@@ -314,12 +327,12 @@ function votingView(room) {
           <div class="mark ${markClass}">${mark}</div>
           ${round.phrase ? `<p class="phrase">${escapeHtml(round.phrase)}</p>` : `<p class="hint">ابحث عمن ظهرت عنده علامة الصح</p>`}
         </div>
-        <p class="timer">${seconds} ثانية</p>
+        <p class="timer" data-timer>${seconds} ثانية</p>
         ${round.youVoted ? `<p class="hint" style="text-align:center;margin-bottom:12px">تم تسجيل اختيارك</p>` : `<p class="hint" style="text-align:center;margin-bottom:12px">من تتوقع أن علامة الصح معه؟</p>`}
         <div class="row">
           ${room.players.filter((p) => p.connected).map((p) => `
             <div class="choice-row">
-              <button class="choice ${state.choiceId === p.id ? "selected" : ""}" data-vote="${p.id}" ${round.youVoted ? "disabled" : ""}>
+              <button type="button" class="choice ${currentChoiceId(round) === p.id ? "selected" : ""}" data-vote="${p.id}" ${round.youVoted ? "disabled" : ""}>
                 ${escapeHtml(p.name)}${p.id === room.you?.id ? " (أنت)" : ""}
               </button>
               ${room.you?.isHost && !p.isHost ? `<button class="btn btn-kick" data-kick="${p.id}">طرد</button>` : ""}
@@ -340,7 +353,7 @@ function resultsView(room) {
       <div class="card">
         <div class="meta">
           <span>نتيجة الجولة ${round.number}</span>
-          <span>${seconds} ث</span>
+          <span data-timer>${seconds} ث</span>
         </div>
         <div class="mark-wrap">
           <div class="mark check">✓</div>
@@ -399,7 +412,7 @@ function watchView(room) {
           <div class="players">${room.players.map((p) => playerRow(room, p)).join("")}</div>
         ` : ""}
         ${room.phase === "voting" && round ? `
-          <p class="timer">${remaining(round.endsAt)} ثانية</p>
+          <p class="timer" data-timer>${remaining(round.endsAt)} ثانية</p>
           <p class="hint" style="text-align:center;margin-bottom:12px">صوّت ${round.votedCount} من ${round.voterCount}</p>
           <p class="hint" style="text-align:center">${(round.votedNames || []).length ? `اختار: ${round.votedNames.map(escapeHtml).join("، ")}` : "لم يختر أحد بعد"}</p>
           ${scoreList(room.scores)}
@@ -515,7 +528,9 @@ app.addEventListener("click", async (event) => {
   }
   const vote = event.target.closest("[data-vote]");
   if (vote) {
+    if (state.room?.round?.youVoted) return;
     state.choiceId = vote.dataset.vote;
+    blurActive();
     socket.emit("vote", { choiceId: state.choiceId }, ack());
   }
 });
@@ -559,14 +574,22 @@ socket.on("state", async (room) => {
   }
   if (room.phase === "voting") {
     const nextRoundId = room.round?.id || `${room.currentRound}`;
-    if (nextRoundId !== previousRoundId) {
+    if (
+      previous !== "voting" ||
+      nextRoundId !== previousRoundId ||
+      room.currentRound !== state.lastRoundNumber
+    ) {
       state.choiceId = "";
-      state.lastRoundId = nextRoundId;
+      blurActive();
     }
-  }
-  if (room.phase === "lobby" || room.phase === "finished") {
+    state.lastRoundId = nextRoundId;
+    state.lastRoundNumber = room.currentRound;
+  } else {
     state.choiceId = "";
-    state.lastRoundId = "";
+    if (room.phase !== "results") {
+      state.lastRoundId = "";
+      state.lastRoundNumber = 0;
+    }
   }
   render();
 });
@@ -600,7 +623,11 @@ socket.on("connect_error", () => {
 
 setInterval(() => {
   state.now = Date.now();
-  if (state.room?.phase === "voting" || state.room?.phase === "results") render();
+  const timer = document.querySelector("[data-timer]");
+  if (timer && state.room?.round?.endsAt) {
+    const unit = state.room.phase === "results" ? "ث" : "ثانية";
+    timer.textContent = `${remaining(state.room.round.endsAt)} ${unit}`;
+  }
 }, 250);
 
 render();

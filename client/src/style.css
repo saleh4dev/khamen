@@ -326,11 +326,20 @@ button {
   border-radius: 14px;
   padding: 13px 14px;
   font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.choice:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: #fff8f3;
+.choice:focus,
+.choice:focus-visible {
+  outline: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .choice:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: #fff8f3;
+  }
 }
 
 .choice.selected {
