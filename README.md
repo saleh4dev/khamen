@@ -29,13 +29,13 @@ cd client && npm install && npm run dev
 
 ## النشر
 
-### Render (الخادم + اللعبة)
+### Render (هنا تُلعب اللعبة)
 
-اترك **Root Directory** فارغاً، ثم:
+إذا كان **Root Directory** هو `server`:
 
 ```
-Build Command: npm install --prefix server && npm install --prefix client && npm run build --prefix client
-Start Command: npm start --prefix server
+Build Command: npm install && npm run build
+Start Command: npm start
 ```
 
 أضف متغير البيئة:

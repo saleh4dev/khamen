@@ -166,13 +166,13 @@ app.use((req, res, next) => {
   if (fs.existsSync(indexFile)) {
     return res.sendFile(indexFile);
   }
-  res.type("html").send(`<!doctype html>
+  res.status(503).type("html").send(`<!doctype html>
 <html lang="ar" dir="rtl">
 <meta charset="utf-8" />
 <title>خامن</title>
 <body style="font-family:sans-serif;padding:40px;background:#f6efe4;color:#1c1610">
-  <h1>خادم اللعبة يعمل</h1>
-  <p>العب من <a href="https://saleh4dev.github.io/khamen/">صفحة GitHub</a>.</p>
+  <h1>الواجهة لم تُبن بعد</h1>
+  <p>في Render ضع أمر البناء: <code>npm install &amp;&amp; npm run build</code></p>
 </body>
 </html>`);
 });

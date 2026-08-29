@@ -2,8 +2,9 @@ services:
   - type: web
     name: khamen
     runtime: node
-    buildCommand: npm install --prefix server && npm install --prefix client && npm run build --prefix client
-    startCommand: npm start --prefix server
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: CORS_ORIGIN
         value: https://saleh4dev.github.io,https://saleh4dev.github.io/khamen
