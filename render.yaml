@@ -1,12 +1,15 @@
 services:
   - type: web
-    name: who-game
+    name: khamen
     runtime: node
-    rootDir: server
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: npm install --prefix server && npm install --prefix client && npm run build --prefix client
+    startCommand: npm start --prefix server
     envVars:
       - key: CORS_ORIGIN
-        sync: false
+        value: https://saleh4dev.github.io,https://saleh4dev.github.io/khamen
       - key: NODE_VERSION
         value: "20"
+      - key: VITE_SERVER_URL
+        value: https://khamen.onrender.com
+      - key: VITE_BASE
+        value: /

@@ -29,17 +29,20 @@ cd client && npm install && npm run dev
 
 ## النشر
 
-### Render (الخادم)
+### Render (الخادم + اللعبة)
 
-1. اربط المستودع في Render واختر Blueprint أو Web Service من مجلد `server`.
-2. أمر التشغيل: `npm start`.
-3. أضف متغير البيئة:
+اترك **Root Directory** فارغاً، ثم:
+
+```
+Build Command: npm install --prefix server && npm install --prefix client && npm run build --prefix client
+Start Command: npm start --prefix server
+```
+
+أضف متغير البيئة:
 
 ```
 CORS_ORIGIN=https://saleh4dev.github.io,https://saleh4dev.github.io/khamen
 ```
-
-أضف نطاقك إن وُجد.
 
 ### GitHub Pages (الواجهة)
 

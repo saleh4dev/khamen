@@ -2,7 +2,9 @@ import "./style.css";
 import { io } from "socket.io-client";
 import QRCode from "qrcode";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:8787";
+const SERVER_URL =
+  import.meta.env.VITE_SERVER_URL ||
+  (import.meta.env.DEV ? "http://localhost:8787" : window.location.origin);
 const SESSION_KEY = "who-session";
 const app = document.getElementById("app");
 

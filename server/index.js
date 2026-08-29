@@ -1,8 +1,14 @@
 import express from "express";
 import cors from "cors";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { createStore } from "./game.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientDir = path.join(__dirname, "../client/dist");
 
 const PORT = Number(process.env.PORT) || 8787;
 const allowed = (process.env.CORS_ORIGIN || "")
@@ -21,8 +27,12 @@ app.use(express.json());
 const store = createStore();
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "who" });
+  res.json({ ok: true, service: "khamen" });
 });
+
+if (fs.existsSync(clientDir)) {
+  app.use(express.static(clientDir));
+}
 
 app.get("/api/rooms/:code", (req, res) => {
   const room = store.getRoom(req.params.code);
@@ -113,6 +123,26 @@ io.on("connection", (socket) => {
 
 setInterval(() => store.tick(io), 400);
 
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") return next();
+  if (req.path === "/health" || req.path.startsWith("/api") || req.path.startsWith("/socket.io")) {
+    return next();
+  }
+  const indexFile = path.join(clientDir, "index.html");
+  if (fs.existsSync(indexFile)) {
+    return res.sendFile(indexFile);
+  }
+  res.type("html").send(`<!doctype html>
+<html lang="ar" dir="rtl">
+<meta charset="utf-8" />
+<title>خامن</title>
+<body style="font-family:sans-serif;padding:40px;background:#f6efe4;color:#1c1610">
+  <h1>خادم اللعبة يعمل</h1>
+  <p>العب من <a href="https://saleh4dev.github.io/khamen/">صفحة GitHub</a>.</p>
+</body>
+</html>`);
+});
+
 httpServer.listen(PORT, () => {
-  console.log(`who server on ${PORT}`);
+  console.log(`khamen server on ${PORT}`);
 });
