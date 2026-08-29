@@ -116,6 +116,40 @@ io.on("connection", (socket) => {
     ack?.(result.error ? { error: result.error } : { ok: true });
   });
 
+  socket.on("leave", (ack) => {
+    const result = store.leaveRoom(io, {
+      code: socket.data.code,
+      playerId: socket.data.playerId,
+    });
+    if (result.error) return ack?.({ error: result.error });
+    if (socket.data.code) socket.leave(socket.data.code);
+    socket.data.code = null;
+    socket.data.playerId = null;
+    ack?.({ ok: true });
+  });
+
+  socket.on("kick", (payload = {}, ack) => {
+    const result = store.kickPlayer(io, {
+      code: socket.data.code,
+      playerId: socket.data.playerId,
+      targetId: payload.playerId,
+    });
+    ack?.(result.error ? { error: result.error } : { ok: true });
+  });
+
+  socket.on("watch", (payload = {}, ack) => {
+    const result = store.watchRoom({
+      code: payload.code,
+      socketId: socket.id,
+    });
+    if (result.error) return ack?.({ error: result.error });
+    socket.data.watch = true;
+    socket.data.code = result.room.code;
+    socket.join(`watch:${result.room.code}`);
+    socket.emit("state", store.publicRoom(result.room, null, { watch: true }));
+    ack?.({ ok: true, code: result.room.code });
+  });
+
   socket.on("disconnect", () => {
     store.disconnect(io, socket.id);
   });

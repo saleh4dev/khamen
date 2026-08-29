@@ -50,6 +50,48 @@ button {
   width: min(560px, 100%);
 }
 
+.shell-wide {
+  width: min(720px, 100%);
+}
+
+.notice {
+  color: var(--green);
+  background: var(--green-soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.share-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.player-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-kick {
+  background: var(--red-soft);
+  color: var(--red);
+  border: 0;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.choice-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
 .brand {
   text-align: center;
   margin-bottom: 22px;
